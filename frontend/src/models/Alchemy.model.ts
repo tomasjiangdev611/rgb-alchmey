@@ -1,7 +1,10 @@
 export interface RGBAlchemy {
 	userId: string,
-	width: Number,
-	height: Number,
-	maxMoves: Number,
-	target: Array<number>
+	width: number,
+	height: number,
+	maxMoves: number,
+	movesLeft: number,
+	target: Array<number>,
+	closet: Array<number> | null,
+	percentage: number,
 }

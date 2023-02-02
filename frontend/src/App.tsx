@@ -2,16 +2,21 @@ import { useEffect, useState } from 'react';
 import AlchemyService from './services/ApiService';
 import { RGBAlchemy } from './models';
 import './App.css';
+import AlchemyInfo from './components/AlchemyInfo/AlchemyInfo';
 
 function App() {
-  const [alchemyData, setAlchemyData] = useState<RGBAlchemy | null>(null)
+  const [alchemyData, setAlchemyData] = useState<RGBAlchemy>()
 
   useEffect(() => {
     const apiService = new AlchemyService();
     apiService.getAlchemyInitialData()
       .then((response) => {
-        console.log('11111111111111111', response);
-        setAlchemyData(response)
+        setAlchemyData({
+          ...response,
+          movesLeft: response.maxMoves,
+          closet: null,
+          percentage: 100.00
+        })
       })
       .catch(() => {
         console.error('unable to fetch data from server')
@@ -20,6 +25,7 @@ function App() {
 
   return (
     <div className="App">
+      <AlchemyInfo info={alchemyData} />
     </div>
   );
 }
