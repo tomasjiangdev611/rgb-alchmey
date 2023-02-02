@@ -1,24 +1,25 @@
-import React from 'react';
-import logo from './logo.svg';
+import { useEffect, useState } from 'react';
+import AlchemyService from './services/ApiService';
+import { RGBAlchemy } from './models';
 import './App.css';
 
 function App() {
+  const [alchemyData, setAlchemyData] = useState<RGBAlchemy | null>(null)
+
+  useEffect(() => {
+    const apiService = new AlchemyService();
+    apiService.getAlchemyInitialData()
+      .then((response) => {
+        console.log('11111111111111111', response);
+        setAlchemyData(response)
+      })
+      .catch(() => {
+        console.error('unable to fetch data from server')
+      })
+  }, [])
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
     </div>
   );
 }
