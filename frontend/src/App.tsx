@@ -38,9 +38,9 @@ function App() {
     }
   }, [alchemyData])
 
-  const clickSource = (row: number, col: number) => {
-    if (alchemyData && palette && currentTry < 3) {
-      let updatedPalette: Array<PaletteItem[]> = [...palette];
+  const getUpdatedPalette = (row: number, col: number, customColorArray: Array<number>) => {
+    let updatedPalette;
+    if (alchemyData && palette) {
       let direction;
       if (col === 0 || col === alchemyData.width + 1) {
         direction = DirectionTypes.HORIZONTAL
@@ -59,13 +59,30 @@ function App() {
         case 2:
           colorArray = [0, 0, 255]
           break;
+        default:
+          colorArray = customColorArray
+          break;
       }
       updatedPalette = ColorService.getUpdatedPaletteWithClick(
-        alchemyData, updatedPalette, colorArray, row, col, direction
+        alchemyData, [...palette], colorArray, row, col, direction
       );
-      setPalette(updatedPalette);
-      setCurrentTry(currentTry + 1)
     }
+    return updatedPalette;
+  }
+
+  const onClickSource = (row: number, col: number) => {
+    const updatedPalette = getUpdatedPalette(row, col, [0, 0, 0]);
+    console.log('11111111111111 updated', updatedPalette)
+    setPalette(updatedPalette);
+    setCurrentTry(currentTry + 1)
+  }
+
+  const onDragTile = (sourceRow: number, sourceCol: number, colorArray: Array<number>) => {
+    console.log('11111111111111 dropped', sourceRow, sourceCol, colorArray)
+    const updatedPalette = getUpdatedPalette(sourceRow, sourceCol, colorArray);
+    console.log('11111111111111 updated', updatedPalette)
+    setPalette(updatedPalette);
+    setCurrentTry(currentTry + 1)
   }
 
 
@@ -86,12 +103,21 @@ function App() {
                             color={palette.color}
                             row={row}
                             col={col}
-                            clickSource={clickSource}
+                            onClickSource={onClickSource}
                           />
                         )
                       }
                       {
-                        palette.type === ItemTypes.TILE && <Tile color={palette.color} />
+                        palette.type === ItemTypes.TILE && (
+                          <Tile
+                            color={palette.color}
+                            colorArray={palette.colorArray}
+                            row={row}
+                            col={col}
+                            onDragTile={onDragTile}
+                            draggable={currentTry > 2}
+                          />
+                        )
                       }
                       {
                         palette.type === ItemTypes.NONE && <div className='empty-item'></div>

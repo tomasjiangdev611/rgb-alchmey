@@ -52,9 +52,13 @@ export const getUpdatedPaletteWithClick = (
 				}
 				let newColorArray = item.colorArray;
 				const distance = alchemyData.height + 1 - Math.abs(row - rowIndex);
-				newColorArray = item.colorArray.map(
-					(v, index) => Math.min(v + colorArray[index] * distance / (alchemyData.height + 1), 255)
-				)
+				if (item.type !== ItemTypes.SOURCE) {
+					newColorArray = item.colorArray.map((v, index) => v + colorArray[index] * distance / (alchemyData.height + 1))
+					const normalization = Math.max(newColorArray[0], newColorArray[2], newColorArray[2], 255);
+					newColorArray = newColorArray.map((v) => v * 255 / normalization)
+				} else {
+					newColorArray = item.colorArray.map((_, index) => colorArray[index] * distance / (alchemyData.height + 1))
+				}
 				return {
 					...item,
 					color: getRGBString(newColorArray[0], newColorArray[1], newColorArray[2]),
