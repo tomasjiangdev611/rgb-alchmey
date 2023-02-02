@@ -8,3 +8,9 @@ export interface RGBAlchemy {
 	closet: Array<number> | null,
 	percentage: number,
 }
+
+export interface PaletteItem {
+  type: string,
+  color: string,
+  colorArray: Array<number>,
+}

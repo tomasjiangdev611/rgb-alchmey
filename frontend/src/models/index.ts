@@ -1,1 +1,2 @@
-export * from './Alchemy.model'
+export * from './Alchemy'
+export * from './ItemTypes'
