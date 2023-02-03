@@ -1,11 +1,11 @@
 import { DirectionTypes, ItemTypes, PaletteItem, RGBAlchemy } from "../models";
 
-export const getRGBString = (r: number, g: number, b: number): string => {
-  return `rgb(${r}, ${g}, ${b})`
+export const getRGBString = (colorArray: Array<number>): string => {
+  return `rgb(${colorArray[0].toFixed(0)}, ${colorArray[1].toFixed(0)}, ${colorArray[2].toFixed(0)})`
 }
 
 export const getInitialPalette = (width: number, height: number) => {
-	const initialString = getRGBString(0, 0, 0);
+	const initialString = getRGBString([0, 0, 0]);
 	let basicPalette = new Array(height + 2)
 		.fill(initialString)
 		.map(() => new Array(width + 2).fill(initialString));
@@ -52,16 +52,16 @@ export const getUpdatedPaletteWithClick = (
 				}
 				let newColorArray = item.colorArray;
 				const distance = alchemyData.height + 1 - Math.abs(row - rowIndex);
-				if (item.type !== ItemTypes.SOURCE) {
+				// if (item.type !== ItemTypes.SOURCE) {
 					newColorArray = item.colorArray.map((v, index) => v + colorArray[index] * distance / (alchemyData.height + 1))
 					const normalization = Math.max(newColorArray[0], newColorArray[2], newColorArray[2], 255);
 					newColorArray = newColorArray.map((v) => v * 255 / normalization)
-				} else {
-					newColorArray = item.colorArray.map((_, index) => colorArray[index] * distance / (alchemyData.height + 1))
-				}
+				// } else {
+				// 	newColorArray = item.colorArray.map((_, index) => colorArray[index] * distance / (alchemyData.height + 1))
+				// }
 				return {
 					...item,
-					color: getRGBString(newColorArray[0], newColorArray[1], newColorArray[2]),
+					color: getRGBString(newColorArray),
 					colorArray: newColorArray,
 				}
 			} else {
@@ -75,11 +75,21 @@ export const getUpdatedPaletteWithClick = (
 				)
 				return {
 					...item,
-					color: getRGBString(newColorArray[0], newColorArray[1], newColorArray[2]),
+					color: getRGBString(newColorArray),
 					colorArray: newColorArray,
 				}
 			}
 		})
 	})
 	return updatedPalette;
+}
+
+export const getCloseValue = (curColor: Array<number>, targetColor: Array<number>) => {
+	const rootValue = Math.sqrt(
+		(curColor[0] - targetColor[0]) * (curColor[0] - targetColor[0]) + 
+		(curColor[1] - targetColor[1]) * (curColor[1] - targetColor[1]) + 
+		(curColor[2] - targetColor[2]) * (curColor[2] - targetColor[2])
+	);
+	const value = rootValue / 255 / Math.sqrt(3);
+	return value;
 }

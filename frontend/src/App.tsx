@@ -4,26 +4,34 @@ import { DirectionTypes, ItemTypes, PaletteItem, RGBAlchemy } from './models';
 import * as ColorService from './services/Color.service';
 import { DndProvider } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
+import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
+import { renderTooltip } from './services/RenderTooltip';
 import './App.css';
-import AlchemyInfo from './components/AlchemyInfo/AlchemyInfo';
 import Source from './components/Source/Source';
 import Tile from './components/Tile/Tile';
 
+type ClosetColor = {
+  color: string,
+  colorArray: Array<number>,
+  closeValue: number,
+  row: number,
+  col: number,
+}
+
+const apiService = new AlchemyService();
 
 function App() {
-  const [alchemyData, setAlchemyData] = useState<RGBAlchemy>()
-  const [palette, setPalette] = useState<Array<PaletteItem[]>>()
+  const [alchemyData, setAlchemyData] = useState<RGBAlchemy>(null)
+  const [palette, setPalette] = useState<Array<PaletteItem[]>>(null)
   const [currentTry, setCurrentTry] = useState(0);
+  const [closetColor, setClosetColor] = useState<ClosetColor>(null)
 
   useEffect(() => {
-    const apiService = new AlchemyService();
     apiService.getAlchemyInitialData()
       .then((response) => {
         setAlchemyData({
           ...response,
-          movesLeft: response.maxMoves,
-          closet: null,
-          percentage: 100.00
+          maxMoves: 5
         })
       })
       .catch(() => {
@@ -37,6 +45,61 @@ function App() {
       setPalette(panelItems)
     }
   }, [alchemyData])
+
+  useEffect(() => {
+    if (alchemyData && currentTry === alchemyData.maxMoves) {
+      setTimeout(() => {
+        const alertMessage = `
+        ${closetColor.closeValue <= 0.1 ? 'You Win!' : 'You failed'} Do you want to try try again?
+      `
+        const retry = window.confirm(alertMessage);
+        if (retry) {
+          apiService.getAlchemyDataByUserId(alchemyData.userId)
+            .then((response) => {
+              setAlchemyData({
+                ...response,
+              })
+              setCurrentTry(0);
+              setClosetColor(null)
+            })
+            .catch(() => {
+              console.error('unable to fetch data from server')
+            })
+        }
+      }, 500)
+      
+    }
+  }, [currentTry, alchemyData])
+
+  useEffect(() => {
+    if (palette && currentTry !== 0) {
+      let minColor: ClosetColor = {
+        color: null,
+        colorArray: [0, 0, 0],
+        closeValue: 100000,
+        row: 0,
+        col: 0,
+      };
+      palette.forEach((rowArray, rowIndex) => {
+        rowArray.forEach((item, colIndex) => {
+          if (item.type !== ItemTypes.TILE) {
+            return;
+          }
+          const relation = ColorService.getCloseValue(item.colorArray, alchemyData.target);
+          if (minColor.closeValue > relation) {
+            minColor = {
+              color: item.color,
+              colorArray: item.colorArray,
+              closeValue: relation,
+              row: rowIndex,
+              col: colIndex,
+            }
+          }
+        })
+      })
+      setClosetColor(minColor)
+    }
+  }, [palette, alchemyData, currentTry])
 
   const getUpdatedPalette = (row: number, col: number, customColorArray: Array<number>) => {
     let updatedPalette;
@@ -71,25 +134,79 @@ function App() {
   }
 
   const onClickSource = (row: number, col: number) => {
+    if (currentTry > 2) {
+      return;
+    }
     const updatedPalette = getUpdatedPalette(row, col, [0, 0, 0]);
-    console.log('11111111111111 updated', updatedPalette)
     setPalette(updatedPalette);
     setCurrentTry(currentTry + 1)
   }
 
   const onDragTile = (sourceRow: number, sourceCol: number, colorArray: Array<number>) => {
-    console.log('11111111111111 dropped', sourceRow, sourceCol, colorArray)
+    if (currentTry < 3) {
+      return;
+    }
     const updatedPalette = getUpdatedPalette(sourceRow, sourceCol, colorArray);
-    console.log('11111111111111 updated', updatedPalette)
     setPalette(updatedPalette);
     setCurrentTry(currentTry + 1)
   }
 
-
   return (
     <div className="App">
       <DndProvider backend={HTML5Backend}>
-        <AlchemyInfo info={alchemyData} />
+        {
+          alchemyData && (
+            <div className="info mt-3">
+              <h3>RGB Alchemy</h3>
+              <div className="d-flex">
+                <span className="p-1">User ID: </span>
+                <span className="p-1">{alchemyData.userId}</span>
+              </div>
+              <div className="d-flex">
+                <span className="p-1">Moves left: </span>
+                <span className="p-1">{alchemyData.maxMoves - currentTry}</span>
+              </div>
+              <div className="d-flex">
+                <span className="p-1">Target color: </span>
+                <OverlayTrigger
+                  placement="right"
+                  delay={{ show: 100, hide: 100 }}
+                  overlay={(props) => renderTooltip(props, alchemyData.target)}
+                >
+                  <span
+                    className='empty-item p-1'
+                    style={{ backgroundColor: ColorService.getRGBString(alchemyData.target) }}
+                  />
+                </OverlayTrigger>
+              </div>
+              <div className="d-flex">
+                <span className="p-1">Closest color: </span>
+                <span className="p-1">
+                  {
+                    closetColor && (
+                      <div className="d-flex">
+                        <OverlayTrigger
+                          placement="right"
+                          delay={{ show: 100, hide: 100 }}
+                          overlay={(props) => renderTooltip(props, closetColor?.colorArray)}
+                        >
+                          <span
+                            className='empty-item p-1 '
+                            style={{
+                              backgroundColor: ColorService.getRGBString(closetColor?.colorArray),
+                              marginRight: '8px'
+                            }}
+                          />
+                        </OverlayTrigger>
+                        △ = {(closetColor?.closeValue * 100).toFixed(2)}%
+                      </div>
+                    )
+                  }
+                </span>
+              </div>
+            </div>
+          )
+        }
         <div className='palette-container'>
           {
             palette?.map((array, row) => (
@@ -100,7 +217,7 @@ function App() {
                       {
                         palette.type === ItemTypes.SOURCE && (
                           <Source
-                            color={palette.color}
+                            palette={palette}
                             row={row}
                             col={col}
                             onClickSource={onClickSource}
@@ -110,17 +227,17 @@ function App() {
                       {
                         palette.type === ItemTypes.TILE && (
                           <Tile
-                            color={palette.color}
-                            colorArray={palette.colorArray}
+                            palette={palette}
                             row={row}
                             col={col}
                             onDragTile={onDragTile}
                             draggable={currentTry > 2}
+                            hightLight={ closetColor && closetColor.col === col && closetColor.row === row }
                           />
                         )
                       }
                       {
-                        palette.type === ItemTypes.NONE && <div className='empty-item'></div>
+                        palette.type === ItemTypes.NONE && <span className='empty-item'></span>
                       }
                     </div>
                   )) 

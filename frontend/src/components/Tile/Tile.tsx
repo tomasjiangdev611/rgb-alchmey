@@ -1,15 +1,19 @@
 import React from 'react';
 import type { DragSourceMonitor } from 'react-dnd'
 import { useDrag } from 'react-dnd'
-import { ItemTypes } from '../../models';
+import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
+import Tooltip from 'react-bootstrap/Tooltip';
+import * as ColorService from './../../services/Color.service';
+import { renderTooltip } from '../../services/RenderTooltip';
+import { ItemTypes, PaletteItem } from '../../models';
 
 type Props = {
-	color: string,
-  colorArray: Array<number>,
+	palette: PaletteItem
 	row: number,
 	col: number,
 	onDragTile: (row: number, col: number, color: Array<number>) => any,
-	draggable: boolean
+	draggable: boolean,
+	hightLight: boolean
 }
 
 interface DropResult {
@@ -19,17 +23,18 @@ interface DropResult {
 
 const sourceStyle = {
 	height: '32px',
-	width: '32px'
+	width: '32px',
+	cursor: 'pointer',
 }
 
-const Tile: React.FC<Props> = ({ color, colorArray, row, col, draggable, onDragTile }) => {
+const Tile: React.FC<Props> = ({ palette, row, col, draggable, onDragTile, hightLight }) => {
 	const [_, drag] = useDrag(
     () => ({
       type: ItemTypes.TILE,
       end(item, monitor) {
         const dropResult = monitor.getDropResult() as DropResult
         if (item && dropResult) {
-					onDragTile(dropResult.row, dropResult.col, colorArray)
+					onDragTile(dropResult.row, dropResult.col, palette.colorArray)
         }
       },
       collect: (monitor: DragSourceMonitor) => ({
@@ -37,13 +42,21 @@ const Tile: React.FC<Props> = ({ color, colorArray, row, col, draggable, onDragT
       }),
 			canDrag: draggable
     }),
-    [draggable],
+    [draggable, onDragTile],
   )
+
   return (
-		<div
-			ref={drag}
-			style={{ ...sourceStyle, backgroundColor: color }}
-		/>
+		<OverlayTrigger
+      placement="right"
+      delay={{ show: 100, hide: 100 }}
+      overlay={(props) => renderTooltip(props, palette.colorArray)}
+    >
+      <div
+				ref={drag}
+				style={{ ...sourceStyle, backgroundColor: palette.color }}
+				className={hightLight ? "highlight" : ''}
+			/>
+		</OverlayTrigger>
   );
 }
 
