@@ -1,14 +1,15 @@
 import { useEffect, useState } from 'react';
-import AlchemyService from './services/ApiService';
-import { DirectionTypes, ItemTypes, PaletteItem, RGBAlchemy } from './models';
-import * as ColorService from './services/Color.service';
+import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import { DndProvider } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
-import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
+
+import AlchemyService from './services/ApiService';
+import * as ColorService from './services/Color.service';
 import { renderTooltip } from './services/RenderTooltip';
-import './App.css';
+import { DirectionTypes, ItemTypes, PaletteItem, RGBAlchemy } from './models';
 import Source from './components/Source/Source';
 import Tile from './components/Tile/Tile';
+import './App.css';
 
 type ClosetColor = {
   color: string,
@@ -29,10 +30,7 @@ function App() {
   useEffect(() => {
     apiService.getAlchemyInitialData()
       .then((response) => {
-        setAlchemyData({
-          ...response,
-          maxMoves: 5
-        })
+        setAlchemyData(response)
       })
       .catch(() => {
         console.error('unable to fetch data from server')
@@ -69,6 +67,7 @@ function App() {
       }, 500)
       
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentTry, alchemyData])
 
   useEffect(() => {
@@ -228,8 +227,6 @@ function App() {
                         palette.type === ItemTypes.TILE && (
                           <Tile
                             palette={palette}
-                            row={row}
-                            col={col}
                             onDragTile={onDragTile}
                             draggable={currentTry > 2}
                             hightLight={ closetColor && closetColor.col === col && closetColor.row === row }

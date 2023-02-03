@@ -1,8 +1,7 @@
 import React from 'react';
-import { useDrop } from 'react-dnd';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
-import Tooltip from 'react-bootstrap/Tooltip';
-import * as ColorService from './../../services/Color.service';
+import { useDrop } from 'react-dnd';
+
 import { ItemTypes } from '../../models/ItemTypes';
 import { renderTooltip } from '../../services/RenderTooltip';
 import { PaletteItem } from '../../models';
@@ -21,8 +20,13 @@ const sourceStyle = {
 	borderRadius: '50%'
 }
 
-const Source: React.FC<Props> = ({ palette, row, col, onClickSource }) => {
-	const [_, drop] = useDrop(() => ({
+const Source: React.FC<Props> = ({
+	palette,
+	row,
+	col,
+	onClickSource
+}) => {
+	const [, drop] = useDrop(() => ({
 		accept: ItemTypes.TILE,
 		drop: () => ({ row, col }),
 		collect: (monitor: any) => ({

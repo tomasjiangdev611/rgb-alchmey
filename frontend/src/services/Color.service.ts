@@ -1,4 +1,9 @@
-import { DirectionTypes, ItemTypes, PaletteItem, RGBAlchemy } from "../models";
+import { 
+	DirectionTypes,
+	ItemTypes,
+	PaletteItem,
+	RGBAlchemy
+} from "../models";
 
 export const getRGBString = (colorArray: Array<number>): string => {
   return `rgb(${colorArray[0].toFixed(0)}, ${colorArray[1].toFixed(0)}, ${colorArray[2].toFixed(0)})`
@@ -53,9 +58,9 @@ export const getUpdatedPaletteWithClick = (
 				let newColorArray = item.colorArray;
 				const distance = alchemyData.height + 1 - Math.abs(row - rowIndex);
 				// if (item.type !== ItemTypes.SOURCE) {
-					newColorArray = item.colorArray.map((v, index) => v + colorArray[index] * distance / (alchemyData.height + 1))
-					const normalization = Math.max(newColorArray[0], newColorArray[2], newColorArray[2], 255);
-					newColorArray = newColorArray.map((v) => v * 255 / normalization)
+				newColorArray = item.colorArray.map((v, index) => v + colorArray[index] * distance / (alchemyData.height + 1))
+				const normalization = Math.max(newColorArray[0], newColorArray[2], newColorArray[2], 255);
+				newColorArray = newColorArray.map((v) => v * 255 / normalization)
 				// } else {
 				// 	newColorArray = item.colorArray.map((_, index) => colorArray[index] * distance / (alchemyData.height + 1))
 				// }
@@ -90,6 +95,6 @@ export const getCloseValue = (curColor: Array<number>, targetColor: Array<number
 		(curColor[1] - targetColor[1]) * (curColor[1] - targetColor[1]) + 
 		(curColor[2] - targetColor[2]) * (curColor[2] - targetColor[2])
 	);
-	const value = rootValue / 255 / Math.sqrt(3);
-	return value;
+	const diff = rootValue / 255 / Math.sqrt(3);
+	return diff;
 }

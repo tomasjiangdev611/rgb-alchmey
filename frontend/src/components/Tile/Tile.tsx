@@ -1,16 +1,13 @@
 import React from 'react';
+import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import type { DragSourceMonitor } from 'react-dnd'
 import { useDrag } from 'react-dnd'
-import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
-import Tooltip from 'react-bootstrap/Tooltip';
-import * as ColorService from './../../services/Color.service';
+
 import { renderTooltip } from '../../services/RenderTooltip';
 import { ItemTypes, PaletteItem } from '../../models';
 
 type Props = {
 	palette: PaletteItem
-	row: number,
-	col: number,
 	onDragTile: (row: number, col: number, color: Array<number>) => any,
 	draggable: boolean,
 	hightLight: boolean
@@ -27,8 +24,13 @@ const sourceStyle = {
 	cursor: 'pointer',
 }
 
-const Tile: React.FC<Props> = ({ palette, row, col, draggable, onDragTile, hightLight }) => {
-	const [_, drag] = useDrag(
+const Tile: React.FC<Props> = ({
+	palette,
+	draggable,
+	onDragTile,
+	hightLight
+}) => {
+	const [, drag] = useDrag(
     () => ({
       type: ItemTypes.TILE,
       end(item, monitor) {
